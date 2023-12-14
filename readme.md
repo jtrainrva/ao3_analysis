@@ -1,6 +1,6 @@
 # What is this?
 
-This repository contains data and (eventually) analysis of metadata I gathered from works on (Archive of Our Own)[archiveofourown.org]. Starting on 11-11-2023 I searched the archive for all newly updated works every hour for 24 hours and then searched again a day later to try to capture the same set of works. The scirpt captured the change over a 24 hour period of 10,829 works.
+This repository contains data and (eventually) analysis of metadata I gathered from works on [Archive of Our Own](archiveofourown.org). Starting on 11-11-2023 I searched the archive for all newly updated works every hour for 24 hours and then searched again a day later to try to capture the same set of works. The scirpt captured the change over a 24 hour period of 10,829 works.
 
 Over the next week, I queried the archive for every tag in the dataset yielding 100,300 total tags with 67,983 of them being canonical tags. All canonical tags and inherited metatags were recorded for each work.
 
