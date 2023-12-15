@@ -4,7 +4,7 @@ This repository contains data and (eventually) analysis of metadata I gathered f
 
 Over the next week, I queried the archive for every tag in the dataset yielding 100,300 total tags with 67,983 of them being canonical tags. All canonical tags and inherited metatags were recorded for each work.
 
-Analysis is a work in progress, but for now I figured I'd make the data availible. The datafiles are both pickled datastructures with Work and Tag objects from my fork of ao3-api. I plan on uploading them as .json, but this is what I have for now.
+Analysis is a work in progress, but for now I figured I'd make the data availible. The tags and works data are availible as .json files and as pickled datastructures with Work and Tag objects from my fork of ao3-api.
 
 # Works
 

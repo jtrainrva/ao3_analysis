@@ -1,2 +1,4 @@
 tagCache_uncompressed_final.pkl
 queried_works_dict_list.pkl
+tags/tag_cache.json
+works/works.json
