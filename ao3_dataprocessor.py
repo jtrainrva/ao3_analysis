@@ -17,6 +17,7 @@ warnings.filterwarnings("ignore")
 script_dir = os.path.dirname(__file__)
 tags_dir = os.path.join(script_dir,'tags')
 works_dir = os.path.join(script_dir,'works')
+relational_dir = os.path.join(script_dir,'relational')
 rel_path = "queried_works_dict_list.pkl"
 with open(os.path.join(works_dir, rel_path), "rb") as file:
     pickled_data=file.read()
@@ -179,6 +180,26 @@ with open(os.path.join(works_dir, rel_path), "rb") as file:
 zipfile.ZipFile(os.path.join(tags_dir, 'works_json.zip'), mode='w').write(os.path.join(works_dir, rel_path),compress_type=zipfile.ZIP_DEFLATED)
 
 
+tags =  list(AO3.Tag._cache.values())
+
+meta_list = [t.metadata for t in tags if (not t.query_error and t.canonical)]
+union_dict = {}
+key_list = ['name','category','date_queried']
+for k in key_list:
+    union_dict[k]=[t[k] for t in meta_list]
+    
+tags_df = pd.DataFrame(union_dict)
+tags_df.set_index('name',inplace=True)
+         
+rel_path = "tags_df.zip"
+temp_path=os.path.join(relational_dir, rel_path)
+tags_df.to_csv(temp_path,index=True,compression={'method':'zip','compression' : zipfile.ZIP_DEFLATED})
+
+rel_path = "tags_df.csv"
+temp_path=os.path.join(relational_dir, rel_path)
+tags_df.to_csv(temp_path,index=True)
+   
+
 # populate the dataframe
     
 works_df = pd.DataFrame.from_dict(data_dict)
@@ -227,9 +248,9 @@ unique_works = works_df['id'].unique()
 multi_obs_works = []
 for w in unique_works:
     temp_df = works_df.loc[works_df['id']==w]
-    if temp_df.query_batch.unique().shape[0]>1:
+    n_unique = temp_df.query_batch.unique().shape[0]
+    if n_unique>1 and temp_df.shape[0]>=n_unique*2:
         multi_obs_works.append(w)
-
 
 nobs = [sum(works_df['id']==u) for u in unique_works]
 
@@ -237,7 +258,7 @@ nobs = [sum(works_df['id']==u) for u in unique_works]
 #min_time_idx = temp_df['date_queried'].argmin()
 #max_time_idx = temp_df['date_queried'].argmax()
 
-temp_df = works_df.loc[works_df['id']==51385501]
+temp_df = works_df.loc[works_df['id']==51479029]
 
 # Taking the last period
 # This should be an hour between queries, but we'll double check
@@ -265,6 +286,7 @@ change_dict['chapters'] = []
 change_dict['language'] = []
 change_dict['restricted'] = []
 change_dict['complete'] = []
+change_dict['crossover'] = []
 
 change_dict['date_queried'] = []
 change_dict['time_elapsed'] = []
@@ -343,6 +365,29 @@ for c_id in unique_works:
 change_df = pd.DataFrame.from_dict(change_dict)
 change_df.set_index('id-query',inplace=True)
 
+exploded_tags = change_df[["canonical_tags"]].explode("canonical_tags")
+
+
+rel_path = "exploded_tags.zip"
+temp_path=os.path.join(relational_dir, rel_path)
+exploded_tags.to_csv(temp_path,index=True,compression={'method':'zip','compression' : zipfile.ZIP_DEFLATED})
+
+rel_path = "exploded_tags.csv"
+temp_path=os.path.join(relational_dir, rel_path)
+exploded_tags.to_csv(temp_path,index=True)
+   
+change_df_out = change_df.drop(columns=['canonical_tags'])
+
+rel_path = "change_df.zip"
+temp_path=os.path.join(relational_dir, rel_path)
+change_df_out.to_csv(temp_path,index=True,compression={'method':'zip','compression' : zipfile.ZIP_DEFLATED})
+
+rel_path = "change_df.csv"
+temp_path=os.path.join(relational_dir, rel_path)
+change_df_out.to_csv(temp_path,index=True)
+   
+
+
 change_df.time_elapsed
 
 # Cut off time deltas without sufficient time elapsed
@@ -371,11 +416,9 @@ change_df_longfics = change_df.loc[(change_df.words>=40000) &
 
 
 
-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 box_df = {u:np.log10(change_df.hits_delta.loc[change_df.query_batch==u]+1) for u in range(0,21)}
 
@@ -387,59 +430,3 @@ plt.title('Log10 Change in Hits by Query')
 ax.boxplot(box_df.values())
 ax.set_xticklabels(box_df.keys())
 plt.savefig('loghits_boxplot.png')
-
-temp = [(change_df.loc[change_df.query_batch==u].shape[0]) for u in range(0,23)]
-
-fig, ax = plt.subplots()
-x_multi = [np.random.randn(n) for n in [10000, 5000, 2000]]
-ax.hist(list(box_df.values()), 10, histtype='bar',stacked=True)
-ax.set_title('different sample sizes')
-
-fig.tight_layout()
-
-
-fig = sm.qqplot(np.array(change_df.hits_delta),st.poisson, line="45",fit=False,distargs=(change_df.hits_delta.mean(),))
-plt.show()
-
-fig, ax = plt.subplots()
-st.probplot(change_df.hits_delta,plot=ax,dist='poisson',fit=False)
-plt.show()
-
-
-mu = 10
-test_array = st.poisson.rvs(mu=mu, size=10000)
-fig, ax = plt.subplots(figsize=(7, 5))
-ax.set_title("Poisson vs Poisson Example Q-Q Plot", fontsize=14)
-test_mu = np.mean(test_array)
-qdist = st.poisson(test_mu)
-sm.qqplot(test_array, dist=qdist, line="45", ax=ax)
-
-fig.set_tight_layout(True)
-plt.show()
-plt.close()
-
-
-def get_q_q_plot(latency_values, distribution):
-
-    distribution = getattr(st, distribution)
-    params = distribution.fit(latency_values)
-
-    latency_values.sort()
-
-    arg = params[:-2]
-    loc = params[-2]
-    scale = params[-1]
-
-    x = []
-
-    for i in range(1, len(latency_values)):
-        x.append((i-0.5) / len(latency_values))
-
-    y = distribution.ppf(x, loc=loc, scale=scale, *arg)
-
-    y = list(y)
-
-    emp_percentiles = latency_values[1:]
-    dist_percentiles = y
-
-    return emp_percentiles, dist_percentiles
