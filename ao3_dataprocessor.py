@@ -59,6 +59,16 @@ with open(os.path.join(tags_dir, rel_path), "rb") as file:
 
 # For each work, extract metadata and access time
 
+def isCrossover(work):
+    all_metatags =  [t.get_metatags()+[t] for t in work.tags_unified if not t.query_error and t.canonical and t.category == 'Fandom']
+    if all_metatags:
+        intersect = set.intersection(*map(set,all_metatags))
+        # Return False if there is a common metatag across Fandom tags
+        return not bool(intersect)
+    else:
+        # No Fandom, return True
+        return False
+
 data_dict = {}
 
 normal_fields = (
@@ -100,6 +110,7 @@ for f in datetime_fields:
     
 data_dict['canonical_tags'] = []
 data_dict['query_batch'] = []
+data_dict['crossover'] = []
     
 
 def safe_attribute(o,attr):
@@ -132,6 +143,7 @@ for batch_idx in range(0,len(dict_list)):
                     data_dict[att].append(pd.Timestamp(out))
             data_dict['canonical_tags'].append(work.search_tags)
             data_dict['query_batch'].append(batch_idx)
+            data_dict['crossover'].append(isCrossover(work))
             for t in work.tags_unified:
                 if t.loaded and t.query_error:
                     works_with_errors.add(work)
@@ -199,6 +211,7 @@ rel_path = "tags_df.csv"
 temp_path=os.path.join(relational_dir, rel_path)
 tags_df.to_csv(temp_path,index=True)
    
+
 
 # populate the dataframe
     
@@ -340,20 +353,21 @@ for c_id in unique_works:
             change_dict['time_elapsed'].append(final.date_queried-starting_work.date_queried)
 
 
-            change_dict['hits'].append(final.hits)
-            change_dict['kudos'].append(final.kudos)
-            change_dict['comments'].append(final.comments)
-            change_dict['bookmarks'].append(final.bookmarks)
+            change_dict['hits'].append(starting_work.hits)
+            change_dict['kudos'].append(starting_work.kudos)
+            change_dict['comments'].append(starting_work.comments)
+            change_dict['bookmarks'].append(starting_work.bookmarks)
 
-            change_dict['words'].append(final.words)
-            change_dict['chapters'].append(final.nchapters)
-            change_dict['language'].append(final.language)
-            change_dict['restricted'].append(final.restricted)
-            change_dict['complete'].append(final.complete)
+            change_dict['words'].append(starting_work.words)
+            change_dict['chapters'].append(starting_work.nchapters)
+            change_dict['language'].append(starting_work.language)
+            change_dict['restricted'].append(starting_work.restricted)
+            change_dict['complete'].append(starting_work.complete)
+            change_dict['crossover'].append(starting_work.crossover)
             
-            change_dict['canonical_tags'].append(final.canonical_tags)
+            change_dict['canonical_tags'].append(starting_work.canonical_tags)
 
-            change_dict['date_queried'].append(final.date_queried)
+            change_dict['date_queried'].append(starting_work.date_queried)
         else:
             # Observed the same work 3 times in a query
             # This should NEVER happen
@@ -366,7 +380,7 @@ change_df = pd.DataFrame.from_dict(change_dict)
 change_df.set_index('id-query',inplace=True)
 
 exploded_tags = change_df[["canonical_tags"]].explode("canonical_tags")
-
+exploded_tags.rename(columns={'canonical_tags':'Tag Name'},inplace=True)
 
 rel_path = "exploded_tags.zip"
 temp_path=os.path.join(relational_dir, rel_path)
