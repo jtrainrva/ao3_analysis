@@ -172,12 +172,12 @@ with AO3.Tag._cache_lock:
     pickled_data = pickle.dumps(AO3.Tag._cache)
 
 rel_path = "tagCache_uncompressed_final.pkl"
-with open(os.path.join(tags_dir, rel_path), "rb") as file:
+with open(os.path.join(tags_dir, rel_path), "wb") as file:
     file.write(pickled_data)
 
 tags_json = json.dumps([t.metadata for t in AO3.Tag._cache.values()])
 rel_path = "tag_cache.json"
-with open(os.path.join(tags_dir, rel_path), "rb") as file:
+with open(os.path.join(tags_dir, rel_path), "w") as file:
     file.write(tags_json)
     
 zipfile.ZipFile(os.path.join(tags_dir, 'tag_cache_json.zip'), mode='w').write(os.path.join(tags_dir, rel_path),compress_type=zipfile.ZIP_DEFLATED)
@@ -186,7 +186,7 @@ zipfile.ZipFile(os.path.join(tags_dir, 'tag_cache_json.zip'), mode='w').write(os
 works_json = json.dumps([[[w.metadata | {'search_tags' : w.search_tags} for w in d.values()] for d in inner_list] for inner_list in dict_list])
 
 rel_path = "works.json"
-with open(os.path.join(works_dir, rel_path), "rb") as file:
+with open(os.path.join(works_dir, rel_path), "w") as file:
     file.write(works_json)
     
 zipfile.ZipFile(os.path.join(tags_dir, 'works_json.zip'), mode='w').write(os.path.join(works_dir, rel_path),compress_type=zipfile.ZIP_DEFLATED)
