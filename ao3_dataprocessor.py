@@ -192,7 +192,7 @@ with open(os.path.join(works_dir, rel_path), "w") as file:
 zipfile.ZipFile(os.path.join(tags_dir, 'works_json.zip'), mode='w').write(os.path.join(works_dir, rel_path),compress_type=zipfile.ZIP_DEFLATED)
 
 
-tags =  list(AO3.Tag._cache.values())
+tags =  set(AO3.Tag._cache.values())
 
 meta_list = [t.metadata for t in tags if (not t.query_error and t.canonical)]
 union_dict = {}
@@ -210,8 +210,19 @@ tags_df.to_csv(temp_path,index=True,compression={'method':'zip','compression' : 
 rel_path = "tags_df.csv"
 temp_path=os.path.join(relational_dir, rel_path)
 tags_df.to_csv(temp_path,index=True)
-   
 
+metatag_list = [set((t.name,mt.name) for mt in (t.get_metatags())) for t in tags if (not t.query_error and t.canonical and t.metatag_names)]
+flat = [x for xs in metatag_list for x in xs]
+metatags_df = pd.DataFrame(flat,columns = ['Tag Name','Metatag Name'])
+
+rel_path = "metatags_df.zip"
+temp_path=os.path.join(relational_dir, rel_path)
+metatags_df.to_csv(temp_path,index=True,compression={'method':'zip','compression' : zipfile.ZIP_DEFLATED})
+
+
+rel_path = "metatags_df.csv"
+temp_path=os.path.join(relational_dir, rel_path)
+metatags_df.to_csv(temp_path,index=True)
 
 # populate the dataframe
     
