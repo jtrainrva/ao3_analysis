@@ -192,7 +192,38 @@ with open(os.path.join(works_dir, rel_path), "w") as file:
 zipfile.ZipFile(os.path.join(tags_dir, 'works_json.zip'), mode='w').write(os.path.join(works_dir, rel_path),compress_type=zipfile.ZIP_DEFLATED)
 
 
-tags =  set(AO3.Tag._cache.values())
+tags =  list(set(AO3.Tag._cache.values()))
+ntags = len(tags)
+# Parent tags
+parent_list = []
+for i,t in enumerate(tags):
+    print(f"Tag {i} of {ntags} ({str(round(i/ntags*100))}) -- {t}")
+    if (not t.query_error and t.canonical and (t.metatag_names or t.parent_names)):
+        parent_list.append(AO3.utils.get_inherited_tags(t,load_all=True))
+    else:
+        parent_list.append([])
+        
+out_tags = []
+out_parent_tags = []
+
+for t, pl in zip(tags,parent_list):
+    s = set(pl)
+    for pt in s:
+        out_tags.append(t.name)
+        out_parent_tags.append(pt.name)
+
+parents_df = pd.DataFrame({'Tag Name' : out_tags, 'Parent Tag Name' : out_parent_tags})
+parents_df.set_index('Tag Name',inplace=True)
+
+rel_path = "parents_df.csv"
+temp_path=os.path.join(relational_dir, rel_path)
+parents_df.to_csv(temp_path,index=True)
+
+rel_path = "parents_df.zip"
+temp_path=os.path.join(relational_dir, rel_path)
+parents_df.to_csv(temp_path,index=True,compression={'method':'zip','compression' : zipfile.ZIP_DEFLATED})
+
+
 
 meta_list = [t.metadata for t in tags if (not t.query_error and t.canonical)]
 union_dict = {}
@@ -217,12 +248,12 @@ metatags_df = pd.DataFrame(flat,columns = ['Tag Name','Metatag Name'])
 
 rel_path = "metatags_df.zip"
 temp_path=os.path.join(relational_dir, rel_path)
-metatags_df.to_csv(temp_path,index=True,compression={'method':'zip','compression' : zipfile.ZIP_DEFLATED})
+metatags_df.to_csv(temp_path,index=False,compression={'method':'zip','compression' : zipfile.ZIP_DEFLATED})
 
 
 rel_path = "metatags_df.csv"
 temp_path=os.path.join(relational_dir, rel_path)
-metatags_df.to_csv(temp_path,index=True)
+metatags_df.to_csv(temp_path,index=False)
 
 # populate the dataframe
     
