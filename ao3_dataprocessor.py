@@ -167,21 +167,6 @@ for t in tags:
     if not t.loaded:
         print(t)
         t.reload()
-            
-with AO3.Tag._cache_lock:
-    pickled_data = pickle.dumps(AO3.Tag._cache)
-
-rel_path = "tagCache_uncompressed_final.pkl"
-with open(os.path.join(tags_dir, rel_path), "wb") as file:
-    file.write(pickled_data)
-
-tags_json = json.dumps([t.metadata for t in AO3.Tag._cache.values()])
-rel_path = "tag_cache.json"
-with open(os.path.join(tags_dir, rel_path), "w") as file:
-    file.write(tags_json)
-    
-zipfile.ZipFile(os.path.join(tags_dir, 'tag_cache_json.zip'), mode='w').write(os.path.join(tags_dir, rel_path),compress_type=zipfile.ZIP_DEFLATED)
-
 
 works_json = json.dumps([[[w.metadata | {'search_tags' : w.search_tags} for w in d.values()] for d in inner_list] for inner_list in dict_list])
 
@@ -222,6 +207,21 @@ parents_df.to_csv(temp_path,index=True)
 rel_path = "parents_df.zip"
 temp_path=os.path.join(relational_dir, rel_path)
 parents_df.to_csv(temp_path,index=True,compression={'method':'zip','compression' : zipfile.ZIP_DEFLATED})
+
+# Save tags after gathering parent tag data         
+with AO3.Tag._cache_lock:
+    pickled_data = pickle.dumps(AO3.Tag._cache)
+
+rel_path = "tagCache_uncompressed_final.pkl"
+with open(os.path.join(tags_dir, rel_path), "wb") as file:
+    file.write(pickled_data)
+
+tags_json = json.dumps([t.metadata for t in AO3.Tag._cache.values()])
+rel_path = "tag_cache.json"
+with open(os.path.join(tags_dir, rel_path), "w") as file:
+    file.write(tags_json)
+    
+zipfile.ZipFile(os.path.join(tags_dir, 'tag_cache_json.zip'), mode='w').write(os.path.join(tags_dir, rel_path),compress_type=zipfile.ZIP_DEFLATED)
 
 
 
