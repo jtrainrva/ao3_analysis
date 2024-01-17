@@ -31,7 +31,7 @@ We can see fandoms like 'Harry Potter - J. K. Rowling' have both a high volume o
 
 
 <div class="tableau">
-    <h2>Archive of Our Own: Hits and Kudos by Tag</h1>
+    <h2>Archive of Our Own: Hits and Kudos by Tag</h2>
     <script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
     <tableau-viz id="tableauViz"       
         src='https://public.tableau.com/views/AO3_Observed_Data/ChangeWork?:language=en-US&:display_count=n&:origin=viz_share_link'      
