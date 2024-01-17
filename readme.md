@@ -17,3 +17,21 @@ The works file is a list of 24 dictionaries. See ao3_datascraper.py for how I ge
 # Tags
 
 See ao3_dataprocessor.py for how I queried the archive for tags. To reduce queries, tags were cached in a dictionary and exported to tagCache_uncompressed_final.zip. All tags and their metatags were queried. For the uninitiated, a metatag is an inherited tag. For example, "X-Men - All Media Types" has "Marvel" as a metatag since all X-Men works must also be Marvel works. The archive doesn't show these inherited tags by default which is what necessitated this whole process in the first place.
+
+# Hits and Kudos within Tags
+
+I investigated the distribution of Hits and Kudos by Tag and in total to get an idea of which tags are under represented by authors. The idea being, if a tag has a large number of Hits/Kudos per work then there are more readers interested in reading those works than there are authors interested in publishing.
+
+We can see fandoms like 'Harry Potter - J. K. Rowling' have both a high volume of readers and a high volume of fics while other fandoms like 'House of the Dragon' have a high volume of readers, but a lower number of fics.
+
+'Additional Tags' are hidden in the visualization below to prevent NSFW tags from being shown.
+
+
+
+<script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
+
+
+<tableau-viz id="tableauViz"       
+src='https://public.tableau.com/views/AO3_Observed_Data/ChangeWork?:language=en-US&:display_count=n&:origin=viz_share_link'      
+toolbar="bottom">
+</tableau-viz>
